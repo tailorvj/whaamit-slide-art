@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+    <style>
+      .branding-below {
+        bottom: 56px;
+        top: 0;
+      }
+      h3, h4 {
+        margin-top: 0.2em;
+        margin-bottom: 0.4em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar branding-below">
+      <form>
+        <div class="block form-group">
+          <h3>Generate Background</h3>
+          <div class="error" id="noapikey" style="display:none;">
+            <p>OpenAI API Key and Organization ID required, please <a href="#" onclick="showApiKeyDialogOnServer()">
+              click here</a> to set them.
+            </p>
+          </div>
+          <label for="radioSlideText">
+            <input type="radio" name="radioText" id="radioSlideText" value="slide" checked> Use Slide Text for subject
+          </label><br>
+          <label for="radioCustomText">
+            <input type="radio" name="radioText" id="radioCustomText" value="custom"> Use Custom Subject
+          </label><br><br>
+          <label for="customText">Custom Subject:</label><br>
+          <textarea id="customText" name="customText" rows="4" cols="30" disabled></textarea>
+          <h4>Theme</h4>
+          <label for="radioThemeLight">
+            <input type="radio" name="radioTheme" id="radioThemeLight" value="light" checked> Light
+          </label><br>
+          <label for="radioThemeDark">
+            <input type="radio" name="radioTheme" id="radioThemeDark" value="dark"> Dark
+          </label>
+          <h4>Art Style</h4>
+          <select id="artStyle">
+            <option value="">Presets</option>
+            <option value="Arcade">Arcade</option>
+            <option value="Pixar3D">Pixar3D</option>
+            <option value="Mesmerize">Mesmerize</option>
+            <option value="Japanese">Japanese (default)</option>
+            <option value="Renaissance">Renaissance</option>
+            <option value="Japanese2">Japanese2</option>
+            <option value="Fantasy">Fantasy</option>
+            <option value="Illustration">Illustration</option>
+            <option value="AnimeOil">AnimeOil</option>
+            <option value="Steampunk">Steampunk</option>
+            <option value="AbstractPlasma">AbstractPlasma</option>
+            <option value="Steampunk2">Steampunk2</option>
+            <option value="LowPoly">LowPoly</option>
+          </select><br><br>
+          <label for="artStyleTest">Art Style in your own words:</label><br>
+          <textarea id="artStyleText" name="artStyleText" rows="2" cols="30"></textarea>
+          <br><br>
+          <button class="blue" type="button" id="generateButton" onclick="generateBackground()" disabled>
+            Generate
+          </button>
+          &nbsp; &nbsp;
+          <a href="https://bit.ly/whaamit-feedback" target="_blank">Feedback</a>
+          &nbsp; &nbsp;
+          <a href="https://bit.ly/whaamit-donate" target="_blank">Donate</a>
+        </div>
+        <div id="loading" style="display:none;">
+          <p>
+            <img src="https://www.google.com/logos/2012/hertz-2011-hp.gif" width=42 height=17 />
+            Generating...
+          </p>
+        </div>
+        <div id="success" style="display:none;">
+          <p>Success!</p>
+        </div>
+        <div class="error" id="failure" style="display:none;">
+          <p>Failure!</p>
+        </div>
+      </form>
+    </div>
+    <div class="sidebar bottom">
+      <span class="gray">
+        Google Slides Add-on by TailorVJ.com
+      </span>
+    </div>
+<script>
+  var settingsValidated = false;
+  var checkSettingsInterval = null;
+
+  // Handle the custom text textarea
+  var radioSlideText = document.getElementById('radioSlideText');
+  var radioCustomText = document.getElementById('radioCustomText');
+  var customText = document.getElementById('customText');
+
+  radioSlideText.onclick = function() {
+    customText.disabled = true;
+  }
+  radioCustomText.onclick = function() {
+    customText.disabled = false;
+    customText.focus();
+  }
+
+  function checkSettingsValidation() {
+    google.script.run.withSuccessHandler(function(settings) {
+      if (settings.apiKey && settings.orgId) {
+        settingsValidated = true;
+        document.getElementById('generateButton').disabled = false;
+        document.getElementById('noapikey').style.display = 'none';
+        clearInterval(checkSettingsInterval);
+      } else {
+        settingsValidated = false;
+        document.getElementById('generateButton').disabled = true;
+        document.getElementById('noapikey').style.display = 'block';
+      }
+    }).getSettings();
+  }
+
+  function showApiKeyDialogOnServer() {
+    google.script.run.withSuccessHandler(function() {
+      return true;
+    }).showApiKeyDialog();
+  }
+
+  function generateBackground() {
+    // Check for custom text or set text to empty
+    var radioCustomText = document.getElementById('radioCustomText');
+    var theme = document.querySelector('input[name="radioTheme"]:checked').value;
+    var text = radioCustomText.checked ? document.getElementById('customText').value : "";
+    var artStyle = document.getElementById('artStyleText').value.trim() || document.getElementById('artStyle').value;
+
+    // Show loading message in sidebar
+    var loadingDiv = document.getElementById('loading');
+    loadingDiv.style.display = 'block';
+
+    // Call the server function to generate the background
+    google.script.run.withSuccessHandler(function() {
+      loadingDiv.style.display = 'none';
+      var successDiv = document.getElementById('success');
+      successDiv.innerHTML = 'Background image successfully generated by AI';
+      successDiv.style.display = 'block';
+      setTimeout(function() {
+        successDiv.style.display = 'none';
+      }, 5000);
+    }).withFailureHandler(function(error) {
+      loadingDiv.style.display = 'none';
+      var failureDiv = document.getElementById('failure');
+      failureDiv.innerHTML = error.message;
+      failureDiv.style.display = 'block';
+      setTimeout(function() {
+        failureDiv.style.display = 'none';
+      }, 5000);
+    }).generateAnalogousBackgroundImage(text, theme, artStyle);
+  }
+
+  window.onload = function() {
+    checkSettingsValidation();
+    checkSettingsInterval = setInterval(checkSettingsValidation, 5000);
+  };
+</script>
+
+
+  </body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+    <style>
+      .branding-below {
+        bottom: 56px;
+        top: 0;
+      }
+      span.deleteicon {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+      }
+      span.deleteicon span {
+          position: absolute;
+          display: block;
+          right: 3px;
+          width: 15px;
+          height: 15px;
+          border-radius: 50%;
+          color: #fff;
+          background-color: #ccc;
+          font: 13px monospace;
+          text-align: center;
+          line-height: 1em;
+          cursor: pointer;
+      }
+      span.deleteicon input {
+          padding-right: 18px;
+          box-sizing: border-box;
+      }
+      .wide-input {
+        width: 250px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar branding-below">
+      <form>
+        <div class="block form-group">
+          <label for="apiKey">
+            <b>OpenAI API Key:</b> <a href="https://platform.openai.com/account/api-keys" target="_blank">Get it here</a>
+          </label>
+          <div class="input-container">
+            <span class="deleteicon">
+              <input class="wide-input" type="text" id="apiKey" name="apiKey" value="">
+              <span class="clear-button" onclick="clearApiKey()">×</span>
+            </span>
+          </div>
+        </div>
+        <div class="block form-group">
+          <label for="orgId">
+            <b>OpenAI Organization ID:</b> <a href="https://platform.openai.com/account/org-settings" target="_blank">Get it here</a>
+          </label>
+          <div class="input-container">
+            <span class="deleteicon">
+              <input class="wide-input" type="text" id="orgId" name="orgId" value="">
+              <span class="clear-button" onclick="clearOrgId()">×</span>
+            </span>
+          </div>
+        </div>
+        <div class="block">
+          <button class="blue" type="submit" id="saveButton" onclick="saveSettings()">
+            <span>Save</span>
+          </button>
+        </div>
+      </form>
+    </div>
+    <div class="sidebar bottom">
+      <span class="gray">
+        Google Slides Add-on by TailorVJ.com
+      </span>
+    </div>
+    <script>
+      // Call the getSettings() function to set the apiKey and orgId variables in the template
+      google.script.run.withSuccessHandler(function(settings) {
+        document.getElementById('apiKey').value = settings.apiKey;
+        document.getElementById('orgId').value = settings.orgId;
+        if (settings.apiKey && settings.orgId) {
+          document.getElementById('saveButton').innerHTML = '<span class="icon">✓</span> Saved';
+          document.getElementById('saveButton').disabled = true;
+        }
+      }).getSettings();
+
+      function saveSettings() {
+        var apiKey = document.getElementById('apiKey').value;
+        var orgId = document.getElementById('orgId').value;
+        if (apiKey && orgId) {
+          google.script.run.withSuccessHandler(function() {
+            document.getElementById('saveButton').innerHTML = '<span class="icon">✓</span> Saved';
+            document.getElementById('saveButton').disabled = true;
+          }).saveSettings(apiKey, orgId);
+        }
+      }
+
+      function clearApiKey() {
+        google.script.run.withSuccessHandler(function() {
+          document.getElementById('apiKey').value = "";
+          document.getElementById('saveButton').innerHTML = '<span>Save</span>';
+          document.getElementById('saveButton').disabled = false;
+        }).clearApiKey();
+      }
+
+      function clearOrgId() {
+        google.script.run.withSuccessHandler(function() {
+          document.getElementById('orgId').value = "";
+          document.getElementById('saveButton').innerHTML = '<span>Save</span>';
+          document.getElementById('saveButton').disabled = false;
+        }).clearOrgId();
+      }
+    </script>
+  </body>
+</html>
