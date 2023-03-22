@@ -12,6 +12,10 @@
         margin-top: 0.2em;
         margin-bottom: 0.4em;
       }
+      input[disabled] {pointer-events:none}
+      th, td {
+        padding: 0;
+      }
     </style>
   </head>
   <body>
@@ -31,14 +35,36 @@
             <input type="radio" name="radioText" id="radioCustomText" value="custom"> Use Custom Subject
           </label><br><br>
           <label for="customText">Custom Subject:</label><br>
-          <textarea id="customText" name="customText" rows="4" cols="30" disabled></textarea>
+          <span id="customTextSpan"><textarea id="customText" name="customText" rows="4" cols="30" disabled></textarea></span>
           <h4>Theme</h4>
-          <label for="radioThemeLight">
-            <input type="radio" name="radioTheme" id="radioThemeLight" value="light" checked> Light
-          </label><br>
-          <label for="radioThemeDark">
-            <input type="radio" name="radioTheme" id="radioThemeDark" value="dark"> Dark
-          </label>
+          <table style="border-collapse: collapse; width: 100%;">
+            <thead>
+              <tr>
+                <th style="text-align: left;">Background Colors</th>
+                <th style="text-align: left;">Overlay Shape</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <label for="radioThemeLight">
+                    <input type="radio" name="radioTheme" id="radioThemeLight" value="light" checked> Light
+                  </label><br>
+                  <label for="radioThemeDark">
+                    <input type="radio" name="radioTheme" id="radioThemeDark" value="dark"> Dark
+                  </label>
+                </td>
+                <td>
+                  <label for="radioColorBlack">
+                    <input type="radio" name="radioColor" id="radioColorBlack" value="black" checked> Black
+                  </label><br>
+                  <label for="radioColorWhite">
+                    <input type="radio" name="radioColor" id="radioColorWhite" value="white"> White
+                  </label>
+                </td>
+              </tr>
+            </tbody>
+          </table>          
           <h4>Art Style</h4>
           <select id="artStyle">
             <option value="">Presets</option>
@@ -103,6 +129,18 @@
     customText.focus();
   }
 
+  customTextSpan.onclick = function() {
+    customText.disabled = false;
+    radioCustomText.checked = true; 
+    customText.focus();
+  }
+
+
+  // customText.onfocus = function() {
+  //   customText.disabled = false;
+  //   radioCustomText.checked = true; 
+  // }
+
   function checkSettingsValidation() {
     google.script.run.withSuccessHandler(function(settings) {
       if (settings.apiKey && settings.orgId) {
@@ -129,6 +167,7 @@
     var radioCustomText = document.getElementById('radioCustomText');
     var theme = document.querySelector('input[name="radioTheme"]:checked').value;
     var text = radioCustomText.checked ? document.getElementById('customText').value : "";
+    var overlay = document.querySelector('input[name="radioColor"]:checked').value;
     var artStyle = document.getElementById('artStyleText').value.trim() || document.getElementById('artStyle').value;
 
     // Show loading message in sidebar

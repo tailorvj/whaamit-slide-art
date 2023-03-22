@@ -1,4 +1,10 @@
 /**
+ * WhaamIt! Slide Art - Google Slides add-on - AI-powered backgrounds for captivating presentations
+ * Copyright (C) 2023. All rights reserved to Asaf Prihadash, TailorVJ.com
+ * License: GNU AGPL v3
+ */
+
+/**
  * Shows the OpenAI API key dialog box.
  */
 function showApiKeyDialog() {

@@ -37,3 +37,13 @@ Need assistance? Have a suggestion? Reach out to us anytime at https://bit.ly/wh
 [Privacy Policy](https://www.tailorvj.com/whaamit/privacy-policy/)
 
 [Terms of Service](https://www.tailorvj.com/whaamit/terms-of-service/)
+
+## LICENSE and COPYRIGHT
+
+All files in this project are subject to the same license
+
+WhaamIt! Slide Art - Google Slides add-on - AI-powered backgrounds for captivating presentations
+
+Copyright (C) 2023. All rights reserved to Asaf Prihadash, TailorVJ.com
+
+License: [GNU AGPL v3](LICENSE)

@@ -1,4 +1,11 @@
 /**
+ * WhaamIt! Slide Art - Google Slides add-on - AI-powered backgrounds for captivating presentations
+ * Copyright (C) 2023. All rights reserved to Asaf Prihadash, TailorVJ.com
+ * License: GNU AGPL v3
+ */
+
+
+/**
  * A function to test the success and failure handling in the sidebar.
  * Returns a random success or failure state.
  */

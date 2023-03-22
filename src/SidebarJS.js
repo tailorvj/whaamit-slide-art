@@ -1,4 +1,11 @@
 /**
+ * WhaamIt! Slide Art - Google Slides add-on - AI-powered backgrounds for captivating presentations
+ * Copyright (C) 2023. All rights reserved to Asaf Prihadash, TailorVJ.com
+ * License: GNU AGPL v3
+ */
+
+
+/**
  * Shows the sidebar for generating background images.
  */
 function showSidebar() {
@@ -311,9 +318,9 @@ function generateAnalogousBackgroundImage(text, theme, artStyle) {
 /**
  * Adds a semi-transparent rectangle to the current slide, behind all other elements in the slide.
  * The color and transparency of the rectangle depend on the specified theme.
- * @param {string} theme - The color theme. If "light", the shape will be white with 70% transparency. Otherwise, it will be black with 50% transparency.
+ * @param {string} overlay - The overlay shape color. If "white", the shape will be white with 70% transparency. Otherwise, it will be black with 50% transparency.
  */
-function addBackgroundShape(theme) {
+function addBackgroundShape(overlay) {
   var presentation = SlidesApp.getActivePresentation();
   var slide = presentation.getSelection().getCurrentPage();
   var existingShapes = slide.getShapes();
@@ -334,7 +341,7 @@ function addBackgroundShape(theme) {
   shape.getBorder().setTransparent();
 
   // Set the fill color and transparency based on the theme
-  if (theme === 'light') {
+  if (overlay === 'white') {
     shape.getFill().setSolidFill('#ffffff', 0.7);
   } else {
     shape.getFill().setSolidFill('#000000', 0.5);
