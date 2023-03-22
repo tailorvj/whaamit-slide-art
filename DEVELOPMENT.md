@@ -44,6 +44,10 @@ If you don't have that type of file in the menu, you will have to use the "Conne
 
 Clasp is Google's CLI for AppsScript development
 
+* [Official Clasp tutorial document](https://github.com/google/clasp)
+* [Official Clasp codelab](https://codelabs.developers.google.com/codelabs/clasp/) - highly recommended
+* [Clasp Github repo with full command documentation](https://github.com/google/clasp)
+
 #### Install Clasp
 
 If it's not already installed, install Clasp on your machine
@@ -77,7 +81,13 @@ Push your local code to the Google Apps Script server
 $ clasp push
 ```
 
-Now refresh your online AppsScript editor and make sure all of the files from the ./src folder are there
+Now open  your online AppsScript editor and make sure all of the files from the ./src folder are there
+
+```bash
+$ clasp open
+```
+
+The above command will open the current project in the online AppsScript editor. This is useful for Test Deployments
 
 ## Test Deployment
 
@@ -106,7 +116,7 @@ A couple of **IMPORTANT** notes:
 1. Git and Clasp are unrelated to each other. You have to "clasp push" and "git commit" separately.
 2. Don't edit your code in the online AppsScript editor from this moment on.
 
-From now on, every time you would like to test new code modifications on your test presentation, all you have to do is 
+From now on, every time you would like to test new code modifications on your test presentation, all you have to do is
 
 ```bash
 $ clasp push
@@ -124,7 +134,7 @@ Example:
 $ clasp version "Version 1 first working MVP"
 ```
 
-* version <text> - represents the text you use when retrieving that versioned archive. Keep it short but informative. 
+* version `<text>` - represents the text you use when retrieving that versioned archive. Keep it short but informative.
 
 ### Create a versioned deployment:
 
@@ -134,8 +144,8 @@ Example:
 $ clasp deploy -V 1 -d "Version 1 deployment sent to review"
 ```
 
-* -V <number> - represents the version number
-* -d <title> - represents the name as seen in the Deployments UI
+* -V `<number>` - represents the version number
+* -d `<title>` - represents the name as seen in the Deployments UI
 
 ## Pull requests
 
@@ -147,7 +157,6 @@ I appreciate you for taking the time to read this document
 
 Kind regards,
 Tailor VJ
-
 
 ## LICENSE and COPYRIGHT
 
