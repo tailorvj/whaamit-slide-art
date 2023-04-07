@@ -55,12 +55,12 @@
                   </label>
                 </td>
                 <td>
-                  <label for="radioColorBlack">
-                    <input type="radio" name="radioColor" id="radioColorBlack" value="black" checked> Black
-                  </label><br>
-                  <label for="radioColorWhite">
-                    <input type="radio" name="radioColor" id="radioColorWhite" value="white"> White
-                  </label>
+                    <label for="radioColorBlack">
+                      <input type="radio" name="radioColor" id="radioColorBlack" value="black" checked> Black
+                    </label><br>
+                    <label for="radioColorWhite">
+                      <input type="radio" name="radioColor" id="radioColorWhite" value="white"> White
+                    </label>
                 </td>
               </tr>
             </tbody>
@@ -81,6 +81,7 @@
             <option value="AbstractPlasma">AbstractPlasma</option>
             <option value="Steampunk2">Steampunk2</option>
             <option value="LowPoly">LowPoly</option>
+            <option value="Isometric3D">Isometric3D</option>           
           </select><br><br>
           <label for="artStyleTest">Art Style in your own words:</label><br>
           <textarea id="artStyleText" name="artStyleText" rows="2" cols="30"></textarea>
@@ -191,7 +192,7 @@
       setTimeout(function() {
         failureDiv.style.display = 'none';
       }, 5000);
-    }).generateAnalogousBackgroundImage(text, theme, artStyle);
+    }).generateAnalogousBackgroundImage(text, theme, artStyle, overlay);
   }
 
   window.onload = function() {

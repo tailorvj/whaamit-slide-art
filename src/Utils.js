@@ -6,21 +6,6 @@
 
 
 /**
- * A function to test the success and failure handling in the sidebar.
- * Returns a random success or failure state.
- */
-function testFunction(text) {
-  var random = Math.random();
-  Logger.log("textFunction " + random);
-  if (random < 0.5) {
-    return true;
-  } else {
-    throw new Error("An error occurred while processing the request.");
-  }
-}
-
-
-/**
  * Returns a Drive image URL for loading in a HTML img tag
  *
  * @param {string} imageName - The name of the image to retrieve from Drive

@@ -4,18 +4,7 @@
  * License: GNU AGPL v3
  */
 
-/**
- * Shows the OpenAI API key dialog box.
- */
-function showApiKeyDialog() {
-  var template = HtmlService.createTemplateFromFile("Dialog");
-  var apiKey = getApiKey();
-  var orgId = getOrgId();
-  template.apiKey = apiKey;
-  template.orgId = orgId;
-  var html = template.evaluate().setWidth(300).setHeight(250);
-  SlidesApp.getUi().showModalDialog(html, "OpenAI API Key");
-}
+
 
 /**
  * Validates an OpenAI API key.

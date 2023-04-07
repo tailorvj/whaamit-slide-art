@@ -6,21 +6,165 @@
 
 
 /**
- * Shows the sidebar for generating background images.
+ * Top: global variables
+ * The main entry point for this script is the generateAnalogousBackgroundImage() function
  */
-function showSidebar() {
-  Logger.log("showing sidebar");
-  var template = HtmlService.createTemplateFromFile("Sidebar");
-  var html = template.evaluate().setTitle("Generate Backgrounds").setWidth(300);
-  SlidesApp.getUi().showSidebar(html);
+
+
+// Source for most styles: https://strikingloo.github.io/DALL-E-2-prompt-guide
+const styleList = {
+  "Steampunk": "A digital steampunk illustration, 4k, detailed, trending in artstation",
+  "Fantasy": "A digital illustration, 4k, detailed, trending in artstation, fantasy, organic and bent",
+  "Steampunk2": "A digital steampunk illustration in the sky, 4k, detailed, trending in artstation, fantasy",
+  "Japanese": "Breath-taking digital painting with vivid colours amazing art mesmerizing, captivating, artstation 3, japanese style",
+  "Japanese2": "Breath-taking digital painting with amazing art mesmerizing, captivating, artstation 3, japanese style",
+  "Illustration": "A digital illustration, 4k, detailed, trending in artstation, fantasy",
+  "LowPoly" : "Low-poly render; high resolution, 4k",
+  "AnimeOil": "anime oil painting high resolution cottagecore ghibli inspired 4k",
+  "Mesmerize": "Breath-taking digital painting with amazing art mesmerizing, captivating, artstation 3",
+  "Pixar3D": "Pixar style 3D render, 4k, high resolution, trending in artstation",
+  "Renaissance": "An oil painting from the renaissance, Gorgeous digital painting, amazing art, artstation 3, realistic",
+  "Arcade" : "Arcade style, Breath-taking digital painting, 4K, amazing art, fantasy",
+  "AbstractPlasma": "abstract plasma slightly blurred",
+  "Isometric3D" : "Isometric 3D from the film BladeRunner 2049 (2017)"
+};
+
+
+/**
+ * Generates an analogous background image for the current slide using OpenAI's Dall-E model.
+ * @param {string} text - The text to use for generating the image. If not provided, the function will use the text on the current slide.
+ * @param {string} theme - The color theme of the presentation. If "light", the image will use lighter shades of the color scheme. If "dark", it will use darker shades.
+ * @param {string} artStyle - The style of the background image to generate. If not provided, the function will use the default style from the `styleList` object.
+ * @return {void}
+ */
+async function generateAnalogousBackgroundImage(text, theme, artStyle, overlay) {
+  var text = text;
+  var theme = theme;
+  Logger.log("theme: " + theme);
+  var mainTheme = "light";
+  var oppositeTheme = "dark";
+  if (theme == "dark"){
+    mainTheme = "dark";
+    oppositeTheme = "light";
+  };
+  Logger.log("generateAnalogousBackgroundImage mainTheme: " + mainTheme + " , oppositeTheme: " + oppositeTheme);
+
+  var artStyle = setStyle(artStyle);
+  Logger.log("generateAnalogousBackgroundImage artStyle: " + artStyle);
+
+
+  // This only runs with custom text
+  if(countWords(text) > 10){
+    text = await getSummaryFromChatGPT(text);
+  };
+
+  // Gets the current active page that is selected in the active presentation.  
+  var selection = SlidesApp.getActivePresentation().getSelection();
+  var currentPage = selection.getCurrentPage();
+
+  var slideText = "";
+
+  if (!text) {
+    var textOnSlide = await getAllTextOnSlide(currentPage) || "";
+    Logger.log("generateAnalogousBackgroundImage textOnSlide: " + textOnSlide);
+    slideText = countWords(textOnSlide) > 10 ? await getSummaryFromChatGPT(textOnSlide) || "" : textOnSlide;
+  } else {
+    slideText = countWords(text) > 10 ? await getSummaryFromChatGPT(text) || "" : text;
+  }
+
+  slideText = slideText || "Alice in Wonderland falling into the rabbit hole";
+
+  var logSlideText = "generateAnalogousBackgroundImage slideText: " + slideText;
+  Logger.log(logSlideText);
+
+  // Get the color theme of the presentation
+  var colorTheme = getThemeColors();
+  var logColorTheme = "generateAnalogousBackgroundImage colorTheme: " + colorTheme;
+  Logger.log(logColorTheme);
+
+  // Get the OpenAI API key and org identifier
+  var apiKey = getSettings().apiKey;
+  var logApiKey = "generateAnalogousBackgroundImage apiKey" + apiKey;
+  Logger.log(logApiKey);
+  var orgId = getSettings().orgId;
+  var logOrgId = "generateAnalogousBackgroundImage orgId" + orgId;
+  Logger.log(logOrgId);
+
+  // Construct the prompt for Dall-e
+  var prompt2 = "Generate an image of an object or a scene without any text in it, in the style of " + artStyle + ", " + mainTheme + " background, about " + cleanString(slideText) + " - Use mostly " + mainTheme + " shades of colors that are analogous to " + colorTheme;
+
+  Logger.log("generateAnalogousBackgroundImage Dall-e prompt: " + prompt2);
+
+  temperature= 0
+  maxTokens = 2000
+  const requestBody2 = {
+    "prompt": prompt2,
+    "n": 1,
+    "size": "1024x1024"
+  };
+  const requestOptions2 = {
+    "method": "POST",
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer "+apiKey,
+      "OpenAI-Organization": orgId,
+    },
+    "payload": JSON.stringify(requestBody2)
+  };
+  const response2 = UrlFetchApp.fetch("https://api.openai.com/v1/images/generations", requestOptions2);
+  var responseText = response2.getContentText();
+  var json = JSON.parse(responseText);
+  var url1=json['data'][0]['url'];
+  selection.getCurrentPage().getBackground().setPictureFill(UrlFetchApp.fetch(url1).getBlob());
+
+  addBackgroundShape(overlay);
 }
+
+
+/**
+ * Sets the art style for generating the background image
+ * @param {string} artStyleSelection - The selected art style
+ * @return {string} - The set art style
+ */
+function setStyle(artStyleSelection) {
+
+  if (!artStyleSelection) {
+    return styleList['Japanese'];
+  }
+
+  if (artStyleSelection in styleList) {
+    return styleList[artStyleSelection];
+  }
+
+  return artStyleSelection;
+}
+
+
+/**
+ * Returns the word count of a string
+ * @param {string} str - The string to count words in
+ * @return {number} - The number of words in the string
+ */
+function countWords(str) {
+  // remove leading/trailing white space
+  str = str.trim();
+
+  // if there are no words, return 0
+  if (str === "") {
+    return 0;
+  }
+
+  // split string into words and count the length of the resulting array
+  return str.split(/\s+/).length;
+}
+
 
 /**
  * Returns all the text on the slide as a string
  * @param {Slide} slide - The slide to get the text from
  * @return {string} - The text on the slide
  */
-function getAllTextOnSlide(slide) {
+async function getAllTextOnSlide(slide) {
   var elements = slide.getPageElements();
   Logger.log("getAllTextOnSlide elements.length: " + elements.length);
   var allText = '';
@@ -61,32 +205,11 @@ function getAllTextOnSlide(slide) {
     Logger.log("getAllTextOnSlide returning trimmedText: " + trimmedText);
     return trimmedText;
   }else {
-    var summaryFromChatGPT = getSummaryFromChatGPT(trimmedText);
+    var summaryFromChatGPT = await getSummaryFromChatGPT(trimmedText);
     Logger.log("getAllTextOnSlide returning summaryFromChatGPT: " + summaryFromChatGPT);
     return summaryFromChatGPT;
-  }; 
-}
-
-
-
-/**
- * Returns the word count of a string
- * @param {string} str - The string to count words in
- * @return {number} - The number of words in the string
- */
-function countWords(str) {
-  // remove leading/trailing white space
-  str = str.trim();
-
-  // if there are no words, return 0
-  if (str === "") {
-    return 0;
   }
-
-  // split string into words and count the length of the resulting array
-  return str.split(/\s+/).length;
 }
-
 
 /**
  * Cleans up a string by removing unwanted characters and trimming whitespace.
@@ -94,15 +217,14 @@ function countWords(str) {
  * @return {string} - The cleaned up text.
  */
 function cleanString(text) {
-  // Replace non-alphanumeric characters with spaces
-  var cleanedText = text.replace(/[^0-9a-z]/gi, ' ');
+  // Replace non-letter characters with spaces
+  var cleanedText = text.replace(/[^\p{L}]/gu, ' ');
   // Trim whitespace from the beginning and end of the string
   cleanedText = cleanedText.trim();
   // Replace multiple spaces with a single space
   cleanedText = cleanedText.replace(/\s+/g, ' ');
   return cleanedText;
 }
-
 
 
 /**
@@ -119,9 +241,9 @@ function getContent(jsonObj) {
 
 
 /**
- * Generates a summary of the provided text using the OpenAI GPT-3 model.
- * @param {string} slideText - The text to summarize.
- * @return {string|null} - The generated summary, or null if the API call fails.
+ * Generates a scene description from a random book or film that could be relevant to the given slide text using OpenAI's GPT API.
+ * @param {string} slideText - The text on the slide to generate the scene description from.
+ * @return {Promise<string>} - A promise that resolves with the generated scene description string.
  */
 function getSummaryFromChatGPT(slideText) {
   var model = "gpt-3.5-turbo";
@@ -129,7 +251,7 @@ function getSummaryFromChatGPT(slideText) {
 
   var cleanText = cleanString(slideText);
   Logger.log("getSummaryFromChatGPT cleanText: " + cleanText);
-  var prompt = "Generate a high-quality summary of this text: " + cleanText;
+  var prompt = "Generate a 10 words scene description from a random book or film that could be relevant to this text: " + cleanText;
   Logger.log("getSummaryFromChatGPT prompt: " + prompt);
 
   var apiKey = getSettings().apiKey;
@@ -150,21 +272,28 @@ function getSummaryFromChatGPT(slideText) {
       "OpenAI-Organization": orgId,
     },
     "payload": JSON.stringify(requestBody)
-  }
+  };
 
-  try {
-    const response = UrlFetchApp.fetch("https://api.openai.com/" + endpoint, requestOptions);
-    var responseText = response.getContentText();
-    Logger.log("getSummaryFromChatGPT responseText: " + responseText);
-    var json = JSON.parse(responseText);
-    Logger.log("getSummaryFromChatGPT json: " + json);
-    var openAITextResponse = getContent(json);
-    Logger.log("getSummaryFromChatGPT openAITextResponse: " + openAITextResponse);
-    return openAITextResponse;
-  } catch (error) {
-    Logger.log("Error: " + error);
-    return null;
-  }
+  const fetchPromise = UrlFetchApp.fetch("https://api.openai.com/" + endpoint, requestOptions);
+
+  // Set up a timeout promise that will reject after 10 seconds
+  const timeoutPromise = new Promise((resolve, reject) => {
+    setTimeout(() => {
+      reject(new Error('OpenAI API request timed out'));
+    }, 10000);
+  });
+
+  // Use Promise.race to resolve with the first promise that resolves or rejects
+  return Promise.race([fetchPromise, timeoutPromise])
+    .then((response) => {
+        const responseText = response.getContentText();
+        Logger.log("getSummaryFromChatGPT responseText: " + responseText);
+        const json = JSON.parse(responseText);
+        Logger.log("getSummaryFromChatGPT json: " + json);
+        const openAITextResponse = getContent(json);
+        Logger.log("getSummaryFromChatGPT openAITextResponse: " + openAITextResponse);
+        return openAITextResponse;
+    });
 }
 
 
@@ -194,124 +323,6 @@ function getThemeColors() {
   var hexValuesJoin = getHexValuesArray(themeColors).join(' ');
   Logger.log('hexValuesJoin: ' + hexValuesJoin);
   return hexValuesJoin;
-}
-
-
-// Source for most styles: https://strikingloo.github.io/DALL-E-2-prompt-guide
-const styleList = {
-  "Steampunk": "A digital steampunk illustration, 4k, detailed, trending in artstation",
-  "Fantasy": "A digital illustration, 4k, detailed, trending in artstation, fantasy, organic and bent",
-  "Steampunk2": "A digital steampunk illustration in the sky, 4k, detailed, trending in artstation, fantasy",
-  "Japanese": "Breath-taking digital painting with vivid colours amazing art mesmerizing, captivating, artstation 3, japanese style",
-  "Japanese2": "Breath-taking digital painting with amazing art mesmerizing, captivating, artstation 3, japanese style",
-  "Illustration": "A digital illustration, 4k, detailed, trending in artstation, fantasy",
-  "LowPoly" : "Low-poly render; high resolution, 4k",
-  "AnimeOil": "anime oil painting high resolution cottagecore ghibli inspired 4k",
-  "Mesmerize": "Breath-taking digital painting with amazing art mesmerizing, captivating, artstation 3",
-  "Pixar3D": "Pixar style 3D render, 4k, high resolution, trending in artstation",
-  "Renaissance": "An oil painting from the renaissance, Gorgeous digital painting, amazing art, artstation 3, realistic",
-  "Arcade" : "Arcade style, Breath-taking digital painting, 4K, amazing art, fantasy",
-  "AbstractPlasma": "abstract plasma slightly blurred"
-};
-
-
-/**
- * Sets the art style for generating the background image
- * @param {string} artStyleSelection - The selected art style
- * @return {string} - The set art style
- */
-function setStyle(artStyleSelection) {
-
-  if (!artStyleSelection) {
-    return styleList['Japanese'];
-  }
-
-  if (artStyleSelection in styleList) {
-    return styleList[artStyleSelection];
-  }
-
-  return artStyleSelection;
-}
-
-
-/**
- * Generates an analogous background image for the current slide using OpenAI's Dall-E model.
- * @param {string} text - The text to use for generating the image. If not provided, the function will use the text on the current slide.
- * @param {string} theme - The color theme of the presentation. If "light", the image will use lighter shades of the color scheme. If "dark", it will use darker shades.
- * @param {string} artStyle - The style of the background image to generate. If not provided, the function will use the default style from the `styleList` object.
- * @return {void}
- */
-function generateAnalogousBackgroundImage(text, theme, artStyle) {
-  var text = text;
-  var theme = theme;
-  Logger.log("theme: " + theme);
-  var mainTheme = "light";
-  var oppositeTheme = "dark";
-  if (theme == "dark"){
-    mainTheme = "dark";
-    oppositeTheme = "light";
-  };
-  Logger.log("mainTheme: " + mainTheme + " , oppositeTheme: " + oppositeTheme);
-
-  var artStyle = setStyle(artStyle);
-  Logger.log("artStyle: " + artStyle);
-
-  if(countWords(text) > 10){
-    text = getSummaryFromChatGPT(text);
-  };
-
-  // Gets the current active page that is selected in the active presentation.
-  var selection = SlidesApp.getActivePresentation().getSelection();
-  var currentPage = selection.getCurrentPage();
-  // getAllTextOnSlide gets a response from ChatGPT if longer than 10 words
-  var textOnSlide = getAllTextOnSlide(currentPage);
-  Logger.log("textOnSlide: " + textOnSlide);
-
-  var slideText = text || textOnSlide || "Alice in Wonderland falling into the rabbit hole";
-  var logSlideText = "slideText: " + slideText;
-  Logger.log(logSlideText);
-
-  // Get the color theme of the presentation
-  var colorTheme = getThemeColors();
-  var logColorTheme = "colorTheme: " + colorTheme;
-  Logger.log(logColorTheme);
-
-  // Get the OpenAI API key and org identifier
-  var apiKey = getSettings().apiKey;
-  var logApiKey = "apiKey" + apiKey;
-  Logger.log(logApiKey);
-  var orgId = getSettings().orgId;
-  var logOrgId = "orgId" + orgId;
-  Logger.log(logOrgId);
-
-  // Construct the prompt for Dall-e
-  var prompt2 = "generate " + artStyle + " " + mainTheme + " background image about " + slideText + ". Use shades of colors that are analogous to " + colorTheme + ", but use mostly the " + mainTheme + "er shades. Never generate text as part of the image";
-
-  Logger.log("Dall-e prompt: " + prompt2);
-
-  temperature= 0
-  maxTokens = 2000
-  const requestBody2 = {
-    "prompt": prompt2,
-    "n": 1,
-    "size": "1024x1024"
-  };
-  const requestOptions2 = {
-    "method": "POST",
-    "headers": {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer "+apiKey,
-      "OpenAI-Organization": orgId,
-    },
-    "payload": JSON.stringify(requestBody2)
-  };
-  const response2 = UrlFetchApp.fetch("https://api.openai.com/v1/images/generations", requestOptions2);
-  var responseText = response2.getContentText();
-  var json = JSON.parse(responseText);
-  var url1=json['data'][0]['url'];
-  selection.getCurrentPage().getBackground().setPictureFill(UrlFetchApp.fetch(url1).getBlob());
-
-  addBackgroundShape(theme);
 }
 
 

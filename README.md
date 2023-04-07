@@ -3,6 +3,10 @@
 Transform your slides into works of art with WhaamIt! Slide Art
 AI-powered backgrounds for captivating presentations
 
+**IMPORTANT**: This is an educational project that aims to teach the basics of Dall-e prompt engineering within Google Slides. You need your own OpenAI API key and orgId in order to generate images.
+
+[Change Log](CHANGELOG.md)
+
 ## Overview
 
 WhaamIt! Slide Art is an AI-powered add-on for Google Slides that generates stunning, customized backgrounds with just a few clicks. No subscription or hidden fees, and it's open-source. The add-on utilizes the OpenAI API to create unique and professional-looking slide backgrounds in a variety of styles. Say goodbye to dull presentations and impress your audience with WhaamIt!
